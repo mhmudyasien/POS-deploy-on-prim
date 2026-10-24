@@ -41,14 +41,15 @@ services:
     <<: *erp
     restart: "no"
     entrypoint: ["bash", "-c"]
-    command: >
-      ls -1 apps > sites/apps.txt;
-      bench set-config -g db_host db;
-      bench set-config -gp db_port 3306;
-      bench set-config -g redis_cache redis://redis-cache:6379;
-      bench set-config -g redis_queue redis://redis-queue:6379;
-      bench set-config -g redis_socketio redis://redis-queue:6379;
-      bench set-config -gp socketio_port 9000;
+    command:
+      - >
+        ls -1 apps > sites/apps.txt;
+        bench set-config -g db_host db;
+        bench set-config -gp db_port 3306;
+        bench set-config -g redis_cache redis://redis-cache:6379;
+        bench set-config -g redis_queue redis://redis-queue:6379;
+        bench set-config -g redis_socketio redis://redis-queue:6379;
+        bench set-config -gp socketio_port 9000;
     depends_on:
       db:
         condition: service_healthy

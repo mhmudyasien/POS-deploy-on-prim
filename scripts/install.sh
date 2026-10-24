@@ -18,6 +18,20 @@ docker compose up -d --build
 echo "Waiting for backend..."
 until docker compose exec -T backend bench --version >/dev/null 2>&1; do sleep 3; done
 
+# Make sure bench knows where the DB and Redis are, then print the result.
+for kv in "db_host db" \
+          "redis_cache redis://redis-cache:6379" \
+          "redis_queue redis://redis-queue:6379" \
+          "redis_socketio redis://redis-queue:6379"; do
+  docker compose exec -T backend bench set-config -g $kv
+done
+docker compose exec -T backend bench set-config -gp db_port 3306
+docker compose exec -T backend bench set-config -gp socketio_port 9000
+docker compose exec -T backend cat sites/common_site_config.json
+echo
+# Background services read this file at start, so restart them.
+docker compose restart worker scheduler websocket
+
 if docker compose exec -T backend test -f "sites/${SITE_NAME}/site_config.json"; then
   echo "Site ${SITE_NAME} already exists, skipping creation."
 else
